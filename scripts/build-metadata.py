@@ -14,8 +14,16 @@ if subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=n
 for target in ['darwin-amd64', 'darwin-arm64', 'linux-amd64', 'linux-arm64', 'windows-amd64', 'windows-arm64']:
     artifact = dist / ('phasesai-setup-' + target + ('.exe' if target.startswith('windows-') else ''))
     build = subprocess.check_output(['go', 'version', '-m', str(artifact)], text=True)
-    if ('vcs.revision=' + commit) not in build or 'vcs.modified=false' not in build or ('-X main.version=' + version) not in build:
-        raise SystemExit('Binary/source/version mismatch: ' + artifact.name)
+    target_os, target_arch = target.split('-')
+    if ('vcs.revision=' + commit) not in build or 'vcs.modified=false' not in build or ('GOOS=' + target_os) not in build or ('GOARCH=' + target_arch) not in build:
+        raise SystemExit('Binary/source/target mismatch: ' + artifact.name)
+# Go omits linker arguments from build info with -trimpath. Check VCS/target
+# identity for every binary, then execute only the native target's --version.
+host_os = subprocess.check_output(['go', 'env', 'GOHOSTOS'], text=True).strip()
+host_arch = subprocess.check_output(['go', 'env', 'GOHOSTARCH'], text=True).strip()
+native = dist / ('phasesai-setup-' + host_os + '-' + host_arch + ('.exe' if host_os == 'windows' else ''))
+if subprocess.check_output([str(native), '--version'], text=True, timeout=5).strip() != version:
+    raise SystemExit('Native binary version mismatch.')
 raw = subprocess.check_output(['go', 'list', '-m', '-json', 'all'], cwd=root, text=True)
 decoder = json.JSONDecoder(); modules = []
 while raw.strip():
