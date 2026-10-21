@@ -31,10 +31,24 @@ Diagnostics go to the terminal and never include key/config/HTTP-response bodies
 
 ## Publish the standalone source
 
-Once authenticated GitHub access is available, use the account's actual login in the remote URL. Inspect the staged file list first. `dist/`, local caches, logs, and `.env` are ignored.
+From the project folder in **Git Bash**, run:
+
+```bash
+bash phasesai-setup/scripts/publish.sh
+```
+
+Or, from this standalone repository, run `bash scripts/publish.sh`. The script requires Git, Go, and Python 3.9+ (not the GitHub CLI). It uses your normal Git credential helper, identifies the authenticated GitHub account, and asks you to type `PUBLISH` before creating or changing anything on GitHub.
+
+It creates/reuses a public `phasesai-setup` repository, verifies the source allowlist, runs module verification/tests/vet, builds six binaries, pushes source and a preview tag, then uploads the binaries, checksums, source archive, license and build metadata. Assets are staged in a draft before publishing a **prerelease**. The local builds remain unsigned; this does not create a stable installer or provide GitHub build attestations. Installer limitations still apply.
+
+Use `bash scripts/publish.sh --check` for a preflight without authentication or changes. Supply a version explicitly with `bash scripts/publish.sh v0.0.0-preview.1`. If Git Credential Manager needs a sign-in, run `git credential-manager github login` in your normal terminal first. The credential must allow creating the repository and pushing its workflow; tokens are never printed, placed in arguments, or written by this script. Existing remote URLs, public visibility, and release tags are checked; nothing is force-pushed, deleted, or converted from private to public. Inspect any partial repository/draft after a failed publish and use a new tag if assets cannot be verified.
+
+The script does not publish Mintlify, change the gateway website, deploy redirects, or upload to R2. [Git's credential interface](https://git-scm.com/docs/git-credential), [GitHub repository creation](https://docs.github.com/en/rest/repos/repos#create-a-repository-for-the-authenticated-user), and [release uploads](https://docs.github.com/en/rest/releases/assets#upload-a-release-asset) describe the interfaces it uses.
+
+For manual publishing instead, use the account's actual login in the remote URL. Inspect the staged file list first. `dist/`, local caches, logs, and `.env` are ignored.
 
 ```sh
-git add .
+git add .gitattributes .github .gitignore LICENSE README.md go.mod go.sum main.go main_test.go scripts/publish.sh
 git diff --cached --stat
 git commit -m "Add open source PhasesAI setup core skeleton"
 # GitHub CLI alternative: gh repo create phasesai-setup --public --source=. --remote=origin --push
@@ -46,6 +60,6 @@ Create the empty **public** repository on GitHub first if using plain Git; `git 
 
 ## Release integrity
 
-The workflow builds reviewable preview artifacts for six OS/architecture targets and emits checksums/provenance. It deliberately does not publish a stable release or upload to R2 while release blockers remain. Pin the toolchain and action SHAs; promote exact tested bytes to GitHub Releases and R2, never rebuild separately for each host. Publish source tag/commit, license, checksums, SBOM, provenance, and release notes alongside binaries. A checksum downloaded from the same compromised host is not proof of authenticity; verify provenance against the actual public repository and expected workflow identity.
+The workflow builds reviewable preview artifacts for six OS/architecture targets and emits checksums/provenance. It deliberately does not publish a stable release or upload to R2 while release blockers remain. The Bash script publishes a separately identified local-build prerelease; do not confuse those bytes with attested Actions artifacts. Pin the toolchain and action SHAs; promote exact tested bytes to GitHub Releases and R2, never rebuild separately for each host. Publish source tag/commit, license, checksums, SBOM, provenance, and release notes alongside binaries. A checksum downloaded from the same compromised host is not proof of authenticity; verify provenance against the actual public repository and expected workflow identity.
 
 See `../docs-phasesai/maintenance/SETUP-DESIGN.md` and `R2-HOSTING.md` in the handoff package for the full product design. Those private handoff paths are not dependencies of this standalone source repository.
