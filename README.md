@@ -1,67 +1,77 @@
 # phasesai-setup
 
-MIT-licensed **core skeleton**, prepared for a public GitHub repository named `phasesai-setup` under the maintainer's account. The public owner/URL is not established yet. This folder is isolated from the private gateway: do not publish the parent project.
+Open source, MIT-licensed configuration installer for [PhasesAI](https://phasesai.cc). Public source: [ezjfk/phasesai-setup](https://github.com/ezjfk/phasesai-setup). Never publish the parent gateway project.
 
-The source configures Claude Code, Codex, and OpenCode 1. It is not a production installer release. Windows builds support dry-run only until ACL/reparse-point/replace semantics are implemented and tested. Pi, Grok Build, Aider, OpenCode 2, keychain integration, and harness auto-installation are design follow-ups.
+The installer configures Claude Code **2.1.306**, Codex **0.163.0**, and OpenCode **1.19.3**. These are source-reviewed recipes, not a certified PhasesAI harness/model matrix. Other versions, Pi, Grok Build, Aider and OpenCode 2 use the [manual guides](https://docs.phasesai.cc/harnesses/overview).
 
-## Build and inspect
+**Release status:** the original `v0.0.0-preview.20261021163405` binaries used Go 1.27.0 and are withdrawn from the download host. Use source or a replacement release whose CI, checksums and build provenance verify. No stable release is promoted. Source availability and signatures support inspection and origin verification; they do not prove software harmless.
 
-Use the Go version recorded in `go.mod` or newer. Dependencies are pinned in `go.mod` and authenticated by `go.sum`; Go's standard checksum verification stays enabled.
+## Build and run
+
+Go **1.27.3** or newer is required. Keep Go checksum verification enabled.
 
 ```sh
 go mod verify
 go test ./...
 go vet ./...
 go build -trimpath -o phasesai-setup .
-./phasesai-setup --version
 ./phasesai-setup --harness codex --model MODEL_ID --dry-run
+./phasesai-setup --harness codex --model MODEL_ID --smoke-test --save-key
+./phasesai-setup --launch codex
+./phasesai-setup --launch codex -- --help
 ```
 
-Set `PHASESAI_API_KEY` privately in the same terminal, or enter it at the hidden prompt. A prompted key is used only for optional verification; it is not persisted. Codex/OpenCode launches need that variable in their own environment. Claude also needs `ANTHROPIC_AUTH_TOKEN="$PHASESAI_API_KEY"`. Existing stored credentials/managed policy can override routing; verify effective settings manually.
+Choose an exact ID from `https://api.phasesai.cc/v1/models`. Enter a key at the hidden prompt or inject `PHASESAI_API_KEY` privately. Keys never enter JSON/TOML, command arguments or diagnostic logs. Public discovery cannot validate credentials or balance. `--smoke-test` asks separately before one potentially billable API request with a 32-output-token ceiling; it does not test harness tool execution.
 
-The skeleton does not automatically install harnesses. It detects an executable and directs missing installations to vendor instructions. It contacts only `https://api.phasesai.cc` for discovery and optional inference, refuses redirects, and has no telemetry or self-update. A catalog GET is public and cannot validate credentials. `--smoke-test` asks separately before a potentially billable request. The skeleton's authenticated check is API-level, not full harness/tool-call verification.
+`--save-key` uses Windows Credential Manager, macOS Keychain, or Linux Secret Service. The service must be available and unlocked; there is no plaintext fallback. Real OS-store integration remains an acceptance check; unit tests use a mock. `--launch` reads the environment key first, then the saved key, and passes it only to the child process. Claude receives `ANTHROPIC_AUTH_TOKEN` with competing Anthropic credentials removed from that child's environment. Shell profiles and vendor sign-ins are retained. Without a saved key, inject the variable in each launch environment.
 
-## Config changes and recovery
+## Configuration and recovery
 
-The tool previews harness, path, endpoint, and hashes without dumping config content. It parses strict JSON or TOML, retains unrelated semantic values, and refuses malformed or unsupported JSONC files. Comments and formatting may change. It checks the file hasn't changed since preview, makes a timestamped adjacent backup, stages a replacement in the same directory, reparses it, and restores previous bytes if verification fails. It leaves the backup for manual recovery and does not overwrite intervening edits during rollback. It does not provide a crash-safe multi-file transaction or a cross-process lock.
+Run from a neutral directory. Setup detects the exact executable version, honors config-root overrides and refuses known project/profile/credential/header conflicts. Managed policy, remote settings, plugins and every shell override are not exhaustively inspected; check effective settings inside the harness.
 
-Close editors/harnesses that might write the same file. Review existing auth/header/profile overrides manually. No key is persisted by this skeleton. Backups can contain old secrets from a prior config, so protect them. New files use POSIX mode 0600/directories 0700; Windows ACL support is a release blocker. This skeleton may tighten existing POSIX file permissions to 0600; restoring bytes does not restore original permission metadata.
+The preview displays the config path, changed field names, endpoint and before/after SHA-256. Existing values are hidden. `--dry-run` makes no config, credential or log writes; installation, key saving and logging cannot be combined with it. Version checks and discovery still run.
 
-Diagnostics go to the terminal and never include key/config/HTTP-response bodies. Persistent structured logging, request-ID diagnostics, durable recovery journals, native OS file locks, precise owned-field diffs, TOML comment preservation, JSONC merging, and installed-version allowlists remain TODO before a stable release.
+`--install-missing` separately offers an exact vendor npm package on the public registry. Node/npm must exist. Vendor lifecycle scripts run only after confirmation, without requested elevation. Installation is outside config rollback. Existing unreviewed versions are refused rather than replaced automatically.
 
-## Publish the standalone source
+Claude uses strict JSON; OpenCode JSON/JSONC preserves comments/trailing commas; Codex TOML scalar edits preserve unrelated comments/text. Unsupported layouts, malformed files, duplicate JSON keys, linked/reparse paths, hard-linked files and other-owner files are refused. Configs must be inside the user's home and at most 2 MiB.
 
-From the project folder in **Git Bash**, run:
+Transactions use native exclusive locks, home/parent handles, exclusive private backups/staging, a flushed journal, compare-before-replace and post-write validation. Backups can contain old secrets. Private POSIX files use 0600; Windows files grant the current user and SYSTEM access. Existing config permission bits or Windows DACL are preserved. Timestamps, extended attributes and alternate streams are not preserved. File rollback does not undo npm installation or credential-store changes.
 
-```bash
-bash phasesai-setup/scripts/publish.sh
-```
-
-Or, from this standalone repository, run `bash scripts/publish.sh`. The script requires Git, Go, and Python 3.9+ (not the GitHub CLI). It uses your normal Git credential helper, identifies the authenticated GitHub account, and asks you to type `PUBLISH` before creating or changing anything on GitHub.
-
-It creates/reuses a public `phasesai-setup` repository, verifies the source allowlist, runs module verification/tests/vet, builds six binaries, pushes source and a preview tag, then uploads the binaries, checksums, source archive, license and build metadata. Assets are staged in a draft before publishing a **prerelease**. The local builds remain unsigned; this does not create a stable installer or provide GitHub build attestations. Installer limitations still apply.
-
-Use `bash scripts/publish.sh --check` for a preflight without authentication or changes. Supply a version explicitly with `bash scripts/publish.sh v0.0.0-preview.1`. If Git Credential Manager needs a sign-in, run `git credential-manager github login` in your normal terminal first. The credential must allow creating the repository and pushing its workflow; tokens are never printed, placed in arguments, or written by this script. Existing remote URLs, public visibility, and release tags are checked; nothing is force-pushed, deleted, or converted from private to public. Inspect any partial repository/draft after a failed publish and use a new tag if assets cannot be verified.
-
-The script does not publish Mintlify, change the gateway website, deploy redirects, or upload to R2. [Git's credential interface](https://git-scm.com/docs/git-credential), [GitHub repository creation](https://docs.github.com/en/rest/repos/repos#create-a-repository-for-the-authenticated-user), and [release uploads](https://docs.github.com/en/rest/releases/assets#upload-a-release-asset) describe the interfaces it uses.
-
-If Git reports **dubious ownership**, the checkout may belong to the coding sandbox's OS account. The script prints an exact-folder `git config --global --add safe.directory ...` command for you to run in your own terminal after reviewing that folder. It does not change trust settings automatically. If your prompt is `>` after a paste, press Ctrl+C to cancel the incomplete command; type the printed command at the normal `$` prompt without copying the prompt or terminal escape characters.
-
-For manual publishing instead, use the account's actual login in the remote URL. Inspect the staged file list first. `dist/`, local caches, logs, and `.env` are ignored.
+Verification failure restores original bytes/permissions only if the file still matches this installation. Recover an interrupted transaction explicitly:
 
 ```sh
-git add .gitattributes .github .gitignore LICENSE README.md go.mod go.sum main.go main_test.go scripts/publish.sh
-git diff --cached --stat
-git commit -m "Add open source PhasesAI setup core skeleton"
-# GitHub CLI alternative: gh repo create phasesai-setup --public --source=. --remote=origin --push
-git remote add origin https://github.com/YOUR_ACCOUNT/phasesai-setup.git
-git push -u origin main
+./phasesai-setup --recover --config /absolute/path/to/config.toml
 ```
 
-Create the empty **public** repository on GitHub first if using plain Git; `git push` alone does not create it. Do not include the private reseller code, deployment archives, customer databases, credentials, or scratch files. The included MIT license applies to this new installer source.
+Recovery asks first, retains backups and refuses to overwrite later edits. To restore a successful older install, close the harness, review subsequent changes and manually restore the adjacent `.phasesai-<random>.bak`. Unix directory syncing and Windows file flushing/journaling do not promise power-loss durability on every filesystem. Locks coordinate setup processes, not arbitrary editors.
 
-## Release integrity
+`--log-file /path/inside/home/setup.jsonl` enables private JSONL with 1 MiB rotation. Only time, build version, harness and fixed event/result names are logged. HTTP diagnostics include status, validated request ID and bounded numeric Retry-After, never response bodies. HTTPS requests to `api.phasesai.cc` reject redirects, cap bodies at 2 MiB and have a 30-second deadline. Catalog GETs retry up to three attempts; billable POSTs never retry automatically. There is no telemetry or self-update.
 
-The workflow builds reviewable preview artifacts for six OS/architecture targets and emits checksums/provenance. It deliberately does not publish a stable release or upload to R2 while release blockers remain. The Bash script publishes a separately identified local-build prerelease; do not confuse those bytes with attested Actions artifacts. Pin the toolchain and action SHAs; promote exact tested bytes to GitHub Releases and R2, never rebuild separately for each host. Publish source tag/commit, license, checksums, SBOM, provenance, and release notes alongside binaries. A checksum downloaded from the same compromised host is not proof of authenticity; verify provenance against the actual public repository and expected workflow identity.
+## Download verification
 
-See `../docs-phasesai/maintenance/SETUP-DESIGN.md` and `R2-HOSTING.md` in the handoff package for the full product design. Those private handoff paths are not dependencies of this standalone source repository.
+Read release notes and metadata. Verify SHA256SUMS and provenance before execution:
+
+```sh
+gh attestation verify FILE --repo ezjfk/phasesai-setup --signer-workflow ezjfk/phasesai-setup/.github/workflows/preview.yml --source-ref refs/tags/EXACT_RELEASE_TAG
+```
+
+Replace placeholders with a published artifact/tag. Review `scripts/install.sh` or `scripts/install.ps1` first; both require an explicit version and enforce checksum plus repository/workflow/tag identity before execution. Missing provenance and withdrawn downloads fail closed. Binaries are not Apple-notarized or Windows Authenticode-signed. Never bypass a failed verification.
+
+R2 paths: `https://downloads.phasesai.cc/setup/<tag>/<macos|linux|windows>-<amd64|arm64>/<filename>`. The private bucket is served by the hash-verifying Worker in `distribution/`. Only allowlisted GitHub assets are served; immutable keys are not overwritten. Withdrawn executables return 410. `/setup/stable.json` is unavailable until explicit promotion.
+
+## Publish through GitHub CI
+
+From the parent project in Git Bash:
+
+```bash
+bash phasesai-setup/scripts/publish-ci.sh --check
+bash phasesai-setup/scripts/publish-ci.sh v0.1.0-preview.1
+```
+
+`publish.sh` is an alias. The script verifies the public source allowlist, clean standalone main branch and approved remote, runs checks, displays the commit/tag, then asks for `PUBLISH`. Git's normal credential helper authenticates an atomic main/tag push; nothing is force-pushed. CI runs native Windows/macOS/Linux tests and vulnerability checks, builds six targets once, emits source/SBOM/licenses/checksums, attests those exact bytes and publishes a prerelease. R2 requires separate hash-verified promotion. No cloud credentials are needed for GitHub releases.
+
+If Git reports dubious ownership, review the installer folder and run the exact-folder `safe.directory` command printed by the script in your own terminal. Never trust every directory. Press Ctrl+C to clear an incomplete pasted command before typing at a normal prompt.
+
+## Acceptance
+
+`python scripts/verify-api.py --output acceptance.json` optionally checks completed/streamed API responses and harmless tool selection using a dedicated spend-limited key. It asks before billing and saves redacted results; no tools execute. Actual harness tool execution, usage records, model-specific behavior and real credential-store operation require separate acceptance. A public model list or passing unit tests do not establish those behaviors.
