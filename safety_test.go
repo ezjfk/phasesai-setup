@@ -117,7 +117,7 @@ func TestRecoveryAfterInterruptedInstall(t *testing.T) {
 			old := []byte(nil)
 			if existed {
 				old = []byte("old config")
-				if err := os.WriteFile(target, old, 0600); err != nil {
+				if err := writeOwnedTestFile(target, old, 0600); err != nil {
 					t.Fatal(err)
 				}
 			}
@@ -174,9 +174,9 @@ func TestRecoveryDoesNotClobberExternalEdits(t *testing.T) {
 	target := filepath.Join(home, "config")
 	before := []byte("before")
 	after := []byte("after")
-	os.WriteFile(target, before, 0600)
+	writeOwnedTestFile(target, before, 0600)
 	_, err := transactHome(home, target, before, after, true, func() error {
-		if err := os.WriteFile(target, []byte("external edit"), 0600); err != nil {
+		if err := writeOwnedTestFile(target, []byte("external edit"), 0600); err != nil {
 			t.Fatal(err)
 		}
 		return errors.New("failed")
@@ -196,7 +196,7 @@ func TestRecoveryDoesNotClobberExternalEdits(t *testing.T) {
 func TestLinkedConfigRefused(t *testing.T) {
 	home := t.TempDir()
 	outside := filepath.Join(t.TempDir(), "target")
-	os.WriteFile(outside, []byte("keep"), 0600)
+	writeOwnedTestFile(outside, []byte("keep"), 0600)
 	target := filepath.Join(home, "config")
 	if err := os.Link(outside, target); err != nil {
 		t.Fatal(err)

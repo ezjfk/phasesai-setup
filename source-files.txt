@@ -12,6 +12,7 @@ distribution/worker.test.mjs
 distribution/wrangler.jsonc
 files_unix.go
 files_windows.go
+files_windows_test.go
 go.mod
 go.sum
 harness.go

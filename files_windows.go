@@ -44,13 +44,13 @@ func inspectFile(f *os.File) (fileMetadata, error) {
 	return fileMetadata{Mode: 0600, Security: sd.String()}, nil
 }
 func securityHandle(f *os.File) (windows.Handle, error) {
-	handle, _, err := reopenFile.Call(f.Fd(), uintptr(windows.READ_CONTROL|windows.WRITE_DAC), uintptr(windows.FILE_SHARE_READ|windows.FILE_SHARE_WRITE|windows.FILE_SHARE_DELETE), 0)
+	handle, _, err := reopenFile.Call(f.Fd(), uintptr(windows.READ_CONTROL|windows.WRITE_DAC|windows.WRITE_OWNER), uintptr(windows.FILE_SHARE_READ|windows.FILE_SHARE_WRITE|windows.FILE_SHARE_DELETE), 0)
 	if handle == uintptr(windows.InvalidHandle) {
 		return windows.InvalidHandle, err
 	}
 	return windows.Handle(handle), nil
 }
-func setFileSecurity(f *os.File, sd *windows.SECURITY_DESCRIPTOR) error {
+func setFileSecurity(f *os.File, sd *windows.SECURITY_DESCRIPTOR, owner *windows.SID) error {
 	acl, _, err := sd.DACL()
 	if err != nil {
 		return err
@@ -68,7 +68,11 @@ func setFileSecurity(f *os.File, sd *windows.SECURITY_DESCRIPTOR) error {
 	if control&windows.SE_DACL_PROTECTED != 0 {
 		protection = windows.PROTECTED_DACL_SECURITY_INFORMATION
 	}
-	return windows.SetSecurityInfo(handle, windows.SE_FILE_OBJECT, windows.DACL_SECURITY_INFORMATION|protection, nil, nil, acl, nil)
+	information := windows.DACL_SECURITY_INFORMATION | protection
+	if owner != nil {
+		information |= windows.OWNER_SECURITY_INFORMATION
+	}
+	return windows.SetSecurityInfo(handle, windows.SE_FILE_OBJECT, information, owner, nil, acl, nil)
 }
 func secureFile(f *os.File) error {
 	user, err := windows.GetCurrentProcessToken().GetTokenUser()
@@ -79,7 +83,7 @@ func secureFile(f *os.File) error {
 	if err != nil {
 		return err
 	}
-	return setFileSecurity(f, sd)
+	return setFileSecurity(f, sd, user.User.Sid)
 }
 func restoreMetadata(f *os.File, m fileMetadata) error {
 	if m.Security == "" {
@@ -89,7 +93,7 @@ func restoreMetadata(f *os.File, m fileMetadata) error {
 	if err != nil {
 		return err
 	}
-	return setFileSecurity(f, sd)
+	return setFileSecurity(f, sd, nil)
 }
 func lockFile(f *os.File) error {
 	var overlap windows.Overlapped

@@ -115,7 +115,19 @@ func openStore(home, target string) (*configStore, error) {
 		return nil, err
 	}
 	store := &configStore{home: root, parent: parent, name: filepath.Base(rel)}
-	lock, err := parent.OpenFile(store.name+".phasesai.lock", os.O_CREATE|os.O_RDWR, 0600)
+	lockName := store.name + ".phasesai.lock"
+	lock, err := parent.OpenFile(lockName, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+	if err == nil {
+		// Set ownership/privacy only on the file we just created. Existing files
+		// must pass inspection before any security metadata is changed.
+		if err = secureFile(lock); err != nil {
+			lock.Close()
+			store.close()
+			return nil, err
+		}
+	} else if os.IsExist(err) {
+		lock, err = parent.OpenFile(lockName, os.O_RDWR, 0)
+	}
 	if err != nil {
 		store.close()
 		return nil, err

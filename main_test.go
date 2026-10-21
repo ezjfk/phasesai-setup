@@ -11,6 +11,21 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
+// Fixtures represent normal-user-owned config files even on elevated CI where
+// Windows' default owner is the Administrators group.
+func writeOwnedTestFile(path string, data []byte, mode os.FileMode) error {
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_RDWR, mode)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if err = secureFile(f); err != nil {
+		return err
+	}
+	_, err = f.Write(data)
+	return err
+}
+
 func TestJSONPreservesUnrelatedSettings(t *testing.T) {
 	before := []byte(`{"permissions":{"allow":["Read"]},"env":{"KEEP":"yes"},"counter":9007199254740993}`)
 	out, err := render("claude", "claude-example", before)
@@ -73,7 +88,7 @@ func TestBackupAndApply(t *testing.T) {
 	file := filepath.Join(t.TempDir(), "config.json")
 	old := []byte("old")
 	next := []byte("new")
-	if err := os.WriteFile(file, old, 0600); err != nil {
+	if err := writeOwnedTestFile(file, old, 0600); err != nil {
 		t.Fatal(err)
 	}
 	backup, err := transact(file, old, next, true, func() error { return nil })
@@ -96,7 +111,7 @@ func TestRollbackRestoresPreviousBytes(t *testing.T) {
 		var old []byte
 		if existed {
 			old = []byte("previous")
-			if err := os.WriteFile(file, old, 0600); err != nil {
+			if err := writeOwnedTestFile(file, old, 0600); err != nil {
 				t.Fatal(err)
 			}
 		}
@@ -116,14 +131,14 @@ func TestRollbackRestoresPreviousBytes(t *testing.T) {
 
 func TestConcurrentChangeIsNotOverwritten(t *testing.T) {
 	file := filepath.Join(t.TempDir(), "config")
-	if err := os.WriteFile(file, []byte("external"), 0600); err != nil {
+	if err := writeOwnedTestFile(file, []byte("external"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := transact(file, []byte("old"), []byte("next"), true, func() error { return nil }); err == nil {
 		t.Fatal("stale preview accepted")
 	}
 	_, err := transact(file, []byte("external"), []byte("next"), true, func() error {
-		if err := os.WriteFile(file, []byte("edited"), 0600); err != nil {
+		if err := writeOwnedTestFile(file, []byte("edited"), 0600); err != nil {
 			return err
 		}
 		return errors.New("failed check")
