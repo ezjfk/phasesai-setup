@@ -74,4 +74,6 @@ If Git reports dubious ownership, review the installer folder and run the exact-
 
 ## Acceptance
 
-`python scripts/verify-api.py --output acceptance.json` optionally checks completed/streamed API responses and harmless tool selection using a dedicated spend-limited key. It asks before billing and saves redacted results; no tools execute. Actual harness tool execution, usage records, model-specific behavior and real credential-store operation require separate acceptance. A public model list or passing unit tests do not establish those behaviors.
+`python scripts/verify-api.py --output acceptance.json` optionally checks completed/streamed API responses and harmless tool selection using a dedicated spend-limited key. It asks before billing and saves redacted results; no tools execute. Actual harness tool execution, usage records and model-specific behavior require separate acceptance. A public model list or passing unit tests do not establish those behaviors.
+
+[Native-store acceptance](https://github.com/ezjfk/phasesai-setup/actions/runs/39687219956) passed real dummy-value write/read/delete checks in Windows Credential Manager, a disposable unlocked macOS Keychain and Linux Secret Service. Interactive desktop permission prompts remain session-dependent. The native-store test workflow does not use PhasesAI customer credentials or send inference requests.
