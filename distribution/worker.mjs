@@ -34,7 +34,7 @@ export async function serveArtifact(request, env, entry, fetchAsset = fetch) {
       sha256: entry.sha256,
       onlyIf: { etagDoesNotMatch: '*' },
       httpMetadata: { contentType: 'application/octet-stream', cacheControl: 'public, max-age=31536000, immutable' },
-      customMetadata: { sha256: entry.sha256, repository: manifest.repository, sourceCommit: manifest.sourceCommit },
+      customMetadata: { sha256: entry.sha256, repository: manifest.repository, sourceCommit: entry.sourceCommit || manifest.sourceCommit },
     });
     object = await env.RELEASES.get(entry.key);
     if (!object || object.customMetadata?.sha256 !== entry.sha256) return new Response('Artifact storage unavailable', { status: 503 });
@@ -47,6 +47,7 @@ export async function serveArtifact(request, env, entry, fetchAsset = fetch) {
       'Cache-Control': 'public, max-age=31536000, immutable',
       'X-Content-Type-Options': 'nosniff',
       'X-Artifact-SHA256': entry.sha256,
+      'X-Artifact-Source-Commit': entry.sourceCommit || manifest.sourceCommit,
       'Accept-Ranges': 'none',
     },
   });
@@ -64,8 +65,9 @@ export default {
     if (url.pathname === '/setup/stable.json') return new Response(JSON.stringify({ status: 'preview_only', repository: manifest.repository }), { status: 404, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
     const entry = manifest.assets[url.pathname];
     if (!entry) return new Response('Not found', { status: 404 });
-    if (manifest.withdrawn && /^phasesai-setup-(darwin|linux|windows)-(amd64|arm64)(\.exe)?$/.test(entry.filename)) {
-      return new Response('This preview was withdrawn for a toolchain security update. A replacement release is being prepared.', { status: 410, headers: { 'Cache-Control': 'no-store' } });
+    const withdrawn = manifest.withdrawn || (manifest.withdrawnVersions || []).some(tag => url.pathname.startsWith(`/setup/${tag}/`));
+    if (withdrawn && /^phasesai-setup-(darwin|linux|windows)-(amd64|arm64)(\.exe)?$/.test(entry.filename)) {
+      return new Response('This executable preview was withdrawn. See /setup/preview.json for the current release.', { status: 410, headers: { 'Cache-Control': 'no-store' } });
     }
     try { return await serveArtifact(request, env, entry); }
     catch { console.error(JSON.stringify({ event: 'release_delivery_failed', artifact: entry.filename })); return new Response('Download temporarily unavailable', { status: 503 }); }

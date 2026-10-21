@@ -4,7 +4,7 @@ Open source, MIT-licensed configuration installer for [PhasesAI](https://phasesa
 
 The installer configures Claude Code **2.1.306**, Codex **0.163.0**, and OpenCode **1.19.3**. These are source-reviewed recipes, not a certified PhasesAI harness/model matrix. Other versions, Pi, Grok Build, Aider and OpenCode 2 use the [manual guides](https://docs.phasesai.cc/harnesses/overview).
 
-**Release status:** the original `v0.0.0-preview.20261021163405` binaries used Go 1.27.0 and are withdrawn from the download host. Use source or a replacement release whose CI, checksums and build provenance verify. No stable release is promoted. Source availability and signatures support inspection and origin verification; they do not prove software harmless.
+**Release status:** the original `v0.0.0-preview.20261021163405` binaries used Go 1.27.0 and are withdrawn from the download host. Replacement [v0.1.0-preview.3](https://github.com/ezjfk/phasesai-setup/releases/tag/v0.1.0-preview.3) passed native Windows/macOS/Linux CI; all 14 published assets have verified GitHub build provenance and checksums. No stable release is promoted. Source availability and signatures support inspection and origin verification; they do not prove software harmless.
 
 ## Build and run
 

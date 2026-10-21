@@ -43,3 +43,13 @@ test('a withdrawn native executable cannot be downloaded from the R2 host', asyn
     assert.equal(response.headers.get('Cache-Control'), 'no-store');
   } finally { manifest.withdrawn = previous; }
 });
+
+test('publishing a new preview never re-enables a withdrawn version', async () => {
+  const previous = manifest.withdrawn;
+  manifest.withdrawn = false;
+  try {
+    const old = Object.keys(manifest.assets).find(path => path.includes('/v0.0.0-preview.20261021163405/') && path.endsWith('windows-amd64.exe'));
+    assert.ok(old);
+    assert.equal((await worker.fetch(new Request('https://downloads.phasesai.cc' + old), {})).status, 410);
+  } finally { manifest.withdrawn = previous; }
+});
