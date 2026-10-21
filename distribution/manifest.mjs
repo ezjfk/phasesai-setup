@@ -1,13 +1,14 @@
 export default {
-  "version": "v0.1.0-preview.3",
+  "version": "v0.1.0-preview.4",
   "repository": "https://github.com/ezjfk/phasesai-setup",
-  "sourceCommit": "540a4ef767878a776c51211e34583d834652fa6b",
+  "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a",
   "prerelease": true,
   "nativeSigned": false,
   "buildAttestation": true,
   "withdrawn": false,
   "withdrawnVersions": [
-    "v0.0.0-preview.20261021163405"
+    "v0.0.0-preview.20261021163405",
+    "v0.1.0-preview.3"
   ],
   "assets": {
     "/setup/v0.0.0-preview.20261021163405/macos-amd64/phasesai-setup-darwin-amd64": {
@@ -177,6 +178,104 @@ export default {
       "sha256": "f9ae2378fefb9cb829a49d591499fce5f35a11e0db1798704f162f4a560e940f",
       "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.3/THIRD_PARTY_NOTICES.txt",
       "sourceCommit": "540a4ef767878a776c51211e34583d834652fa6b"
+    },
+    "/setup/v0.1.0-preview.4/build-info.json": {
+      "key": "setup/v0.1.0-preview.4/build-info.json",
+      "filename": "build-info.json",
+      "sha256": "75d5c35ec3da08a263981113c94a3338840ceb1a1193efed50d146c728254ba9",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/build-info.json",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.1.0-preview.4/install.ps1": {
+      "key": "setup/v0.1.0-preview.4/install.ps1",
+      "filename": "install.ps1",
+      "sha256": "f1c4dbfe9ad49468649a4620cc728a30bfd1dd5357efccaa4bf224d301e28bf7",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/install.ps1",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.1.0-preview.4/install.sh": {
+      "key": "setup/v0.1.0-preview.4/install.sh",
+      "filename": "install.sh",
+      "sha256": "248cbeff84420b2a530bcd263f2657cceb5835f964311bd275d449105e7f20b9",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/install.sh",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.1.0-preview.4/LICENSE": {
+      "key": "setup/v0.1.0-preview.4/LICENSE",
+      "filename": "LICENSE",
+      "sha256": "114cd6e024bdf9ec7a59653e92040f7659a351e985ac170741b7ca77b08f6028",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/LICENSE",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.1.0-preview.4/macos-amd64/phasesai-setup-darwin-amd64": {
+      "key": "setup/v0.1.0-preview.4/macos-amd64/phasesai-setup-darwin-amd64",
+      "filename": "phasesai-setup-darwin-amd64",
+      "sha256": "8ada37a59365128209609dcc01688ee9f5018079fd1ea2bd418e137c32240543",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/phasesai-setup-darwin-amd64",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.1.0-preview.4/macos-arm64/phasesai-setup-darwin-arm64": {
+      "key": "setup/v0.1.0-preview.4/macos-arm64/phasesai-setup-darwin-arm64",
+      "filename": "phasesai-setup-darwin-arm64",
+      "sha256": "c929d4d3880815cf212a5f18a288a1a23da04e313db03d68fc0d1940dd190036",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/phasesai-setup-darwin-arm64",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.1.0-preview.4/linux-amd64/phasesai-setup-linux-amd64": {
+      "key": "setup/v0.1.0-preview.4/linux-amd64/phasesai-setup-linux-amd64",
+      "filename": "phasesai-setup-linux-amd64",
+      "sha256": "62c3b6e7d1c9949b524f4969e2dcba62a1c4109c10c167e19a210a56cde8f3c0",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/phasesai-setup-linux-amd64",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.1.0-preview.4/linux-arm64/phasesai-setup-linux-arm64": {
+      "key": "setup/v0.1.0-preview.4/linux-arm64/phasesai-setup-linux-arm64",
+      "filename": "phasesai-setup-linux-arm64",
+      "sha256": "312a892477051b3eb26abade248ab75f9e68a7807b5b87ec244c88e862def5e2",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/phasesai-setup-linux-arm64",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.1.0-preview.4/phasesai-setup-source.tar.gz": {
+      "key": "setup/v0.1.0-preview.4/phasesai-setup-source.tar.gz",
+      "filename": "phasesai-setup-source.tar.gz",
+      "sha256": "1cc4c3b338eb8967c066fa72144e4a624917dc6890ff9f05f9d335db9ffdf481",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/phasesai-setup-source.tar.gz",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.1.0-preview.4/windows-amd64/phasesai-setup-windows-amd64.exe": {
+      "key": "setup/v0.1.0-preview.4/windows-amd64/phasesai-setup-windows-amd64.exe",
+      "filename": "phasesai-setup-windows-amd64.exe",
+      "sha256": "fdb14dfc31c10ee950ed2fb2717a6611912ebc27384c5d4a268b6516a5f0af2f",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/phasesai-setup-windows-amd64.exe",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.1.0-preview.4/windows-arm64/phasesai-setup-windows-arm64.exe": {
+      "key": "setup/v0.1.0-preview.4/windows-arm64/phasesai-setup-windows-arm64.exe",
+      "filename": "phasesai-setup-windows-arm64.exe",
+      "sha256": "2c8ca1d26b0610cd87690c229c459934171bc9b23e227b8ae727654fef7e691c",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/phasesai-setup-windows-arm64.exe",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.1.0-preview.4/sbom.spdx.json": {
+      "key": "setup/v0.1.0-preview.4/sbom.spdx.json",
+      "filename": "sbom.spdx.json",
+      "sha256": "7c039c57c2ddc644d9195fcdc2a6ee6521ddea945e8189097d92bb03c87ee2b2",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/sbom.spdx.json",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.1.0-preview.4/SHA256SUMS": {
+      "key": "setup/v0.1.0-preview.4/SHA256SUMS",
+      "filename": "SHA256SUMS",
+      "sha256": "a584b25930bd963e5cca4ac0b2f5430036191fc59afed4298a47a286fcf96422",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/SHA256SUMS",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.1.0-preview.4/THIRD_PARTY_NOTICES.txt": {
+      "key": "setup/v0.1.0-preview.4/THIRD_PARTY_NOTICES.txt",
+      "filename": "THIRD_PARTY_NOTICES.txt",
+      "sha256": "c04debd229cff7ac7c4c10b83ff95931bd7761c48c6dc9f8aee7d7ffbdf29368",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/THIRD_PARTY_NOTICES.txt",
+      "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
     }
   }
 };
