@@ -1,0 +1,6 @@
+/dist/
+/tmp/
+*.exe
+*.log
+*.bak
+.env
