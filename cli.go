@@ -153,6 +153,9 @@ func run() (result error) {
 	logPath := flag.String("log-file", "", "opt-in private JSONL event log inside home (rotates at 1 MiB)")
 	showVersion := flag.Bool("version", false, "print build version")
 	flag.Parse()
+	if *dry && (*install || *save || *logPath != "" || *recover || *launch != "") {
+		return errors.New("--dry-run cannot install software, save credentials, create logs, recover or launch a harness")
+	}
 	if *showVersion {
 		fmt.Println(version)
 		return nil
@@ -199,9 +202,6 @@ func run() (result error) {
 	}
 	if _, ok := harnessReleases[*harness]; !ok {
 		return errors.New("unsupported harness; use its documented manual guide")
-	}
-	if *dry && (*install || *save || *logPath != "") {
-		return errors.New("--dry-run cannot install software, save credentials or create logs")
 	}
 	var audit *auditLog
 	if *logPath != "" {

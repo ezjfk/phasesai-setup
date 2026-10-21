@@ -55,7 +55,7 @@ Read release notes and metadata. Verify SHA256SUMS and provenance before executi
 gh attestation verify FILE --repo ezjfk/phasesai-setup --signer-workflow ezjfk/phasesai-setup/.github/workflows/preview.yml --source-ref refs/tags/EXACT_RELEASE_TAG
 ```
 
-Replace placeholders with a published artifact/tag. Review `scripts/install.sh` or `scripts/install.ps1` first; both require an explicit version and enforce checksum plus repository/workflow/tag identity before execution. Missing provenance and withdrawn downloads fail closed. Binaries are not Apple-notarized or Windows Authenticode-signed. Never bypass a failed verification.
+Replace placeholders with a published artifact/tag. Authenticate the official GitHub CLI with `gh auth login`. Review `scripts/install.sh` or `scripts/install.ps1` first; both require an explicit version and enforce checksum plus repository/workflow/tag identity before execution. Missing provenance and withdrawn downloads fail closed. Binaries are not Apple-notarized or Windows Authenticode-signed. Never bypass a failed verification.
 
 R2 paths: `https://downloads.phasesai.cc/setup/<tag>/<macos|linux|windows>-<amd64|arm64>/<filename>`. The private bucket is served by the hash-verifying Worker in `distribution/`. Only allowlisted GitHub assets are served; immutable keys are not overwritten. Withdrawn executables return 410. `/setup/stable.json` is unavailable until explicit promotion.
 

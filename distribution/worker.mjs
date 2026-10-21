@@ -10,8 +10,11 @@ export async function serveArtifact(request, env, entry, fetchAsset = fetch) {
     return new Response('Artifact metadata mismatch', { status: 503 });
   }
   if (!object) {
-    const upstream = await fetchAsset(entry.source, { redirect: 'follow', signal: AbortSignal.timeout(45000) });
-    if (!upstream.ok) return new Response('Release temporarily unavailable', { status: 502 });
+    const upstream = await fetchAsset(entry.source, { redirect: 'follow', signal: AbortSignal.timeout(45000), headers: { 'User-Agent': 'PhasesAI-Setup-Distribution/1' } });
+    if (!upstream.ok) {
+      console.error(JSON.stringify({ event: 'release_origin_failed', artifact: entry.filename, status: upstream.status }));
+      return new Response(`Release temporarily unavailable (origin HTTP ${upstream.status})`, { status: 502 });
+    }
     const finalURL = new URL(upstream.url || entry.source);
     if (finalURL.protocol !== 'https:' || !(finalURL.hostname === 'github.com' || finalURL.hostname.endsWith('.githubusercontent.com'))) {
       return new Response('Unexpected release origin', { status: 502 });

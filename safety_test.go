@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"flag"
 	"io"
 	"net/http"
 	"os"
@@ -13,6 +14,19 @@ import (
 
 	"github.com/zalando/go-keyring"
 )
+
+func TestDryRunRejectsRecoveryAndLaunchBeforeSideEffects(t *testing.T) {
+	previousArgs, previousFlags := os.Args, flag.CommandLine
+	defer func() { os.Args, flag.CommandLine = previousArgs, previousFlags }()
+	for _, args := range [][]string{{"--dry-run", "--recover", "--config", "unused"}, {"--dry-run", "--launch", "codex"}} {
+		os.Args = append([]string{"phasesai-setup"}, args...)
+		flag.CommandLine = flag.NewFlagSet("phasesai-setup", flag.ContinueOnError)
+		err := run()
+		if err == nil || !strings.Contains(err.Error(), "--dry-run cannot") {
+			t.Fatalf("unsafe mode combination reached an action: %v", err)
+		}
+	}
+}
 
 func TestExactVersionOutputRefusesPrereleasesAndExtraText(t *testing.T) {
 	for harness, value := range map[string]string{"claude": "2.1.306 (Claude Code)", "codex": "codex-cli 0.163.0", "opencode": "1.19.3"} {
