@@ -56,7 +56,21 @@ done
   printf 'Refusing to publish: this directory contains private gateway/state files.\n' >&2; exit 1;
 }
 if [[ -e .git ]]; then
-  top="$(git rev-parse --show-toplevel)"
+  if ! top="$(git rev-parse --show-toplevel 2>&1)"; then
+    printf '%s\n' "$top" >&2
+    if [[ "$top" == *'detected dubious ownership'* ]]; then
+      trust_path="$source_dir"
+      case "$(uname -s)" in
+        MINGW*|MSYS*) trust_path="$(pwd -W)" ;;
+      esac
+      printf '\nRepository ownership differs from your current OS account.\n' >&2
+      printf 'This can happen when a coding sandbox created the checkout.\n' >&2
+      printf 'After reviewing this installer folder, run in your own terminal:\n\n' >&2
+      printf '  git config --global --add safe.directory %q\n\n' "$trust_path" >&2
+      printf 'Then rerun this script. No trust settings or GitHub resources were changed.\n' >&2
+    fi
+    exit 1
+  fi
   [[ "$(cd -- "$top" && pwd -P)" == "$source_dir" ]] || { printf 'Installer must be its own Git repository.\n' >&2; exit 1; }
   [[ "$(git branch --show-current)" == main ]] || { printf 'Switch the standalone installer repository to main first.\n' >&2; exit 1; }
   while IFS= read -r -d '' file; do

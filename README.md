@@ -45,6 +45,8 @@ Use `bash scripts/publish.sh --check` for a preflight without authentication or 
 
 The script does not publish Mintlify, change the gateway website, deploy redirects, or upload to R2. [Git's credential interface](https://git-scm.com/docs/git-credential), [GitHub repository creation](https://docs.github.com/en/rest/repos/repos#create-a-repository-for-the-authenticated-user), and [release uploads](https://docs.github.com/en/rest/releases/assets#upload-a-release-asset) describe the interfaces it uses.
 
+If Git reports **dubious ownership**, the checkout may belong to the coding sandbox's OS account. The script prints an exact-folder `git config --global --add safe.directory ...` command for you to run in your own terminal after reviewing that folder. It does not change trust settings automatically. If your prompt is `>` after a paste, press Ctrl+C to cancel the incomplete command; type the printed command at the normal `$` prompt without copying the prompt or terminal escape characters.
+
 For manual publishing instead, use the account's actual login in the remote URL. Inspect the staged file list first. `dist/`, local caches, logs, and `.env` are ignored.
 
 ```sh
