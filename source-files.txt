@@ -1,4 +1,5 @@
 .gitattributes
+.github/workflows/native-keyring.yml
 .github/workflows/preview.yml
 .gitignore
 LICENSE
@@ -18,6 +19,7 @@ go.sum
 harness.go
 main.go
 main_test.go
+native_keyring_test.go
 network.go
 safety_test.go
 scripts/build-metadata.py
