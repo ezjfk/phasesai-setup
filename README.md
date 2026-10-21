@@ -65,7 +65,7 @@ From the parent project in Git Bash:
 
 ```bash
 bash phasesai-setup/scripts/publish-ci.sh --check
-bash phasesai-setup/scripts/publish-ci.sh v0.1.0-preview.1
+bash phasesai-setup/scripts/publish-ci.sh
 ```
 
 `publish.sh` is an alias. The script verifies the public source allowlist, clean standalone main branch and approved remote, runs checks, displays the commit/tag, then asks for `PUBLISH`. Git's normal credential helper authenticates an atomic main/tag push; nothing is force-pushed. CI runs native Windows/macOS/Linux tests and vulnerability checks, builds six targets once, emits source/SBOM/licenses/checksums, attests those exact bytes and publishes a prerelease. R2 requires separate hash-verified promotion. No cloud credentials are needed for GitHub releases.
