@@ -43,7 +43,7 @@ for i, module in enumerate(modules):
     directory = pathlib.Path(module.get('Dir', root))
     for file in sorted(directory.iterdir()):
         if file.is_file() and (file.name.upper().startswith(('LICENSE', 'COPYING', 'NOTICE'))):
-            notices.append(name + '@' + revision + ' â€” ' + file.name + '\n' + file.read_text(encoding='utf-8', errors='replace'))
+            notices.append(name + '@' + revision + ' - ' + file.name + '\n' + file.read_text(encoding='utf-8', errors='replace'))
 goroot = pathlib.Path(subprocess.check_output(['go', 'env', 'GOROOT'], text=True).strip())
 notices.append('Go runtime\n' + (goroot / 'LICENSE').read_text())
 spdx = {'spdxVersion': 'SPDX-2.3', 'dataLicense': 'CC0-1.0', 'SPDXID': 'SPDXRef-DOCUMENT',

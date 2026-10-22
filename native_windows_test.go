@@ -29,6 +29,11 @@ func TestNativeWindowsCleanProfile(t *testing.T) {
 		"PATH": filepath.Join(os.Getenv("SystemRoot"), "System32") + ";" + filepath.Join(os.Getenv("SystemRoot"), "System32", "WindowsPowerShell", "v1.0"),
 	} {
 		t.Setenv(name, value)
+		if value == "" {
+			if err := os.Unsetenv(name); err != nil {
+				t.Fatal(err)
+			}
+		}
 	}
 	key := "rk_live_acceptance_dummy_never_sent"
 	for _, h := range []string{"claude", "codex", "opencode"} {
@@ -75,8 +80,11 @@ func TestNativeWindowsCleanProfile(t *testing.T) {
 			if err := applyPlans(home, plans); err != nil {
 				t.Fatal(err)
 			}
-			if h == "codex" || h == "opencode" {
+			{
 				args := []string{"login", "status"}
+				if h == "claude" {
+					args = []string{"auth", "status"}
+				}
 				if h == "opencode" {
 					args = []string{"debug", "config"}
 				}
@@ -87,14 +95,26 @@ func TestNativeWindowsCleanProfile(t *testing.T) {
 					t.Fatal(err)
 				}
 				cmd.Dir = home
+				if h == "codex" {
+					cmd.Env = append(os.Environ(), "CODEX_HOME="+filepath.Dir(path))
+				}
 				var out bytes.Buffer
 				cmd.Stdout = &limitedWriter{Writer: &out, Remaining: 2 << 20}
 				cmd.Stderr = io.Discard
+				if h == "codex" {
+					cmd.Stderr = cmd.Stdout
+				}
 				if err := cmd.Run(); err != nil {
 					t.Fatal("native persisted config validation failed (output withheld)", err)
 				}
 				if h == "codex" && !strings.Contains(strings.ToLower(out.String()), "api key") {
 					t.Fatal("Codex did not select persisted API-key auth (output withheld)")
+				}
+				if h == "claude" {
+					var status map[string]any
+					if json.Unmarshal(out.Bytes(), &status) != nil || status["loggedIn"] != true {
+						t.Fatal("Claude did not recognize its saved token (output withheld)")
+					}
 				}
 				if h == "opencode" {
 					var config map[string]any
@@ -104,9 +124,16 @@ func TestNativeWindowsCleanProfile(t *testing.T) {
 					if start < 0 || end < start || json.Unmarshal(data[start:end+1], &config) != nil {
 						t.Fatal("OpenCode did not return effective config (output withheld)")
 					}
-					got, _ := fieldValue(config, []string{"provider", "phasesai-anthropic", "options", "apiKey"})
-					if got != key {
-						t.Fatal("OpenCode did not load persistent key")
+					for _, provider := range []string{"phasesai-anthropic", "phasesai-gpt"} {
+						got, _ := fieldValue(config, []string{"provider", provider, "options", "apiKey"})
+						// OpenCode intentionally redacts secrets in debug config.
+						if got != "***" && got != key {
+							t.Fatal("OpenCode did not recognize saved provider credentials")
+						}
+						base, _ := fieldValue(config, []string{"provider", provider, "options", "baseURL"})
+						if base != origin+"/v1" {
+							t.Fatal("OpenCode provider endpoint mismatch")
+						}
 					}
 				}
 			}
