@@ -28,14 +28,14 @@ func TestDryRunRejectsRecoveryAndLaunchBeforeSideEffects(t *testing.T) {
 	}
 }
 
-func TestExactVersionOutputRefusesPrereleasesAndExtraText(t *testing.T) {
+func TestStableVersionOutputRefusesPrereleasesAndExtraText(t *testing.T) {
 	for harness, value := range map[string]string{"claude": "2.1.306 (Claude Code)", "codex": "codex-cli 0.163.0", "opencode": "1.19.3"} {
-		if !reviewedVersionOutput(harness, value+"\n") {
+		if _, err := versionOutput(harness, value+"\n"); err != nil {
 			t.Fatal("known version rejected")
 		}
-		for _, bad := range []string{value + "-beta", "prefix " + value, value + "\nunexpected", "0.0.1"} {
-			if reviewedVersionOutput(harness, bad) {
-				t.Fatal("unreviewed version output accepted")
+		for _, bad := range []string{value + "-beta", "prefix " + value, value + "\nunexpected", "unexpected"} {
+			if _, err := versionOutput(harness, bad); err == nil {
+				t.Fatal("malformed version output accepted")
 			}
 		}
 	}
@@ -76,7 +76,7 @@ func TestTOMLPatchesOnlyOwnedScalarRanges(t *testing.T) {
 		t.Fatal(err)
 	}
 	value, _ := fieldValue(root, []string{"model_providers", "phasesai", "requires_openai_auth"})
-	if value != false {
+	if value != true {
 		t.Fatal("boolean patch failed")
 	}
 	again, err := render("codex", "new-model", out)

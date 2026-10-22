@@ -20,7 +20,7 @@ fi
 [[ "$(cd -- "$top" && pwd -P)" == "$source_dir" && "$(git branch --show-current)" == main ]] || { printf '%s\n' 'Use the standalone installer main branch.' >&2; exit 1; }
 case "$(git remote get-url origin)" in https://github.com/ezjfk/phasesai-setup.git|https://github.com/ezjfk/phasesai-setup|git@github.com:ezjfk/phasesai-setup.git) ;; *) printf '%s\n' 'Origin must be the approved ezjfk/phasesai-setup repository.' >&2; exit 1 ;; esac
 [[ ! -e server && ! -e public && ! -e data.sqlite && ! -e .env ]] || { printf '%s\n' 'Private gateway/state files detected; refusing publication.' >&2; exit 1; }
-for directory in scripts distribution .github .github/workflows; do [[ ! -L "$directory" ]] || { printf '%s\n' 'Linked source directories are refused.' >&2; exit 1; }; done
+for directory in scripts distribution docs .github .github/workflows; do [[ ! -L "$directory" ]] || { printf '%s\n' 'Linked source directories are refused.' >&2; exit 1; }; done
 declare -A allowed=()
 while IFS= read -r file; do
   file="${file%$'\r'}"; [[ -n "$file" ]] || continue
@@ -35,7 +35,7 @@ go test ./...
 go vet ./...
 [[ "$check_only" == false ]] || { printf '%s\n' 'Preflight passed. No authentication or remote mutation attempted.'; exit 0; }
 printf 'Repository: https://github.com/ezjfk/phasesai-setup\nCommit: %s\nPreview tag: %s\n' "$(git rev-parse HEAD)" "$tag"
-printf '%s\n' 'This pushes reviewed source. CI tests all three operating systems, builds once, attests artifacts and publishes a prerelease.'
+printf '%s\n' 'This pushes reviewed source. CI tests Windows, builds once, attests artifacts and publishes a prerelease.'
 read -r -p 'Type PUBLISH to push source and tag: ' confirmation
 [[ "$confirmation" == PUBLISH ]] || { printf '%s\n' 'Cancelled.'; exit 1; }
 git fetch origin main

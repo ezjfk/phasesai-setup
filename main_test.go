@@ -74,13 +74,13 @@ func TestInvalidConfigRefused(t *testing.T) {
 	}
 }
 
-func TestOpenCodePreservesModelsAndReferencesEnvironment(t *testing.T) {
-	out, err := render("opencode", "new-model", []byte(`{"provider":{"phasesai":{"models":{"old-model":{"name":"Old"}}},"other":{"name":"Other"}}}`))
+func TestOpenCodePreservesModelsAndPersistsCredentials(t *testing.T) {
+	out, err := renderPersistent("opencode", "claude-opus-5-5", "rk_live_fake_test", []byte(`{"provider":{"phasesai-anthropic":{"models":{"old-model":{"name":"Old"}}},"other":{"name":"Other"}}}`))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Contains(out, []byte("old-model")) || !bytes.Contains(out, []byte("{env:PHASESAI_API_KEY}")) {
-		t.Fatal("model lost or secret reference missing")
+	if !bytes.Contains(out, []byte("old-model")) || !bytes.Contains(out, []byte("rk_live_fake_test")) || bytes.Contains(out, []byte("{env:")) {
+		t.Fatal("model lost or persistent credential missing")
 	}
 }
 

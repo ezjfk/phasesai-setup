@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -28,41 +28,3 @@ jobs:
         env:
           PHASESAI_NATIVE_KEYRING_TEST: '1'
         run: go test -run '^TestNativeKeyringRoundTrip$' -count=1 .
-      - name: Disposable unlocked macOS Keychain roundtrip
-        if: runner.os == 'macOS'
-        shell: bash
-        run: |
-          set -euo pipefail
-          original="$(security default-keychain -d user | sed -E 's/^ *"|"$//g')"
-          keychain="$RUNNER_TEMP/phasesai-acceptance.keychain-db"
-          password="$(openssl rand -hex 24)"
-          security create-keychain -p "$password" "$keychain"
-          cleanup() {
-            security default-keychain -d user -s "$original"
-            security list-keychains -d user -s "$original"
-            security delete-keychain "$keychain"
-          }
-          trap cleanup EXIT
-          security default-keychain -d user -s "$keychain"
-          security list-keychains -d user -s "$keychain"
-          security unlock-keychain -p "$password" "$keychain"
-          PHASESAI_NATIVE_KEYRING_TEST=1 go test -run '^TestNativeKeyringRoundTrip$' -count=1 .
-      - name: Install Linux Secret Service test runtime
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends dbus-x11 gnome-keyring
-      - name: Disposable unlocked Linux Secret Service roundtrip
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          set -euo pipefail
-          dbus-run-session -- bash -euo pipefail -c '
-            export XDG_DATA_HOME="$RUNNER_TEMP/phasesai-keyring-data"
-            export XDG_RUNTIME_DIR="$RUNNER_TEMP/phasesai-keyring-runtime"
-            install -d -m 0700 "$XDG_DATA_HOME" "$XDG_RUNTIME_DIR"
-            password="$(openssl rand -hex 24)"
-            printf "%s" "$password" | gnome-keyring-daemon --unlock --components=secrets >/dev/null
-            gnome-keyring-daemon --start --components=secrets >/dev/null
-            PHASESAI_NATIVE_KEYRING_TEST=1 go test -run "^TestNativeKeyringRoundTrip$" -count=1 .
-          '

@@ -11,12 +11,18 @@ version = args.version
 commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
 if subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=no'], cwd=root, text=True).strip():
     raise SystemExit('Refusing metadata for modified tracked source; commit reviewed source first.')
-for target in ['darwin-amd64', 'darwin-arm64', 'linux-amd64', 'linux-arm64', 'windows-amd64', 'windows-arm64']:
-    artifact = dist / ('phasesai-setup-' + target + ('.exe' if target.startswith('windows-') else ''))
-    build = subprocess.check_output(['go', 'version', '-m', str(artifact)], text=True)
-    target_os, target_arch = target.split('-')
-    if ('vcs.revision=' + commit) not in build or 'vcs.modified=false' not in build or ('GOOS=' + target_os) not in build or ('GOARCH=' + target_arch) not in build:
-        raise SystemExit('Binary/source/target mismatch: ' + artifact.name)
+expected = []
+for arch in ['amd64', 'arm64']:
+    for harness in ['all', 'claude', 'codex', 'opencode']:
+        name = f'phasesai-setup-windows-{arch}.exe' if harness == 'all' else f'phasesai-{harness}-setup-windows-{arch}.exe'
+        expected.append(name)
+        artifact = dist / name
+        build = subprocess.check_output(['go', 'version', '-m', str(artifact)], text=True)
+        if ('vcs.revision=' + commit) not in build or 'vcs.modified=false' not in build or 'GOOS=windows' not in build or ('GOARCH=' + arch) not in build:
+            raise SystemExit('Binary/source/target mismatch: ' + artifact.name)
+for artifact in dist.glob('phasesai-setup-*'):
+    if artifact.name not in expected and artifact.name != 'phasesai-setup-source.tar.gz':
+        raise SystemExit('Non-Windows or unexpected setup artifact: ' + artifact.name)
 # Go omits linker arguments from build info with -trimpath. Check VCS/target
 # identity for every binary, then execute only the native target's --version.
 host_os = subprocess.check_output(['go', 'env', 'GOHOSTOS'], text=True).strip()
@@ -37,7 +43,7 @@ for i, module in enumerate(modules):
     directory = pathlib.Path(module.get('Dir', root))
     for file in sorted(directory.iterdir()):
         if file.is_file() and (file.name.upper().startswith(('LICENSE', 'COPYING', 'NOTICE'))):
-            notices.append(name + '@' + revision + ' — ' + file.name + '\n' + file.read_text(encoding='utf-8', errors='replace'))
+            notices.append(name + '@' + revision + ' â€” ' + file.name + '\n' + file.read_text(encoding='utf-8', errors='replace'))
 goroot = pathlib.Path(subprocess.check_output(['go', 'env', 'GOROOT'], text=True).strip())
 notices.append('Go runtime\n' + (goroot / 'LICENSE').read_text())
 spdx = {'spdxVersion': 'SPDX-2.3', 'dataLicense': 'CC0-1.0', 'SPDXID': 'SPDXRef-DOCUMENT',
@@ -50,7 +56,7 @@ dist.mkdir(parents=True, exist_ok=True)
 (dist / 'THIRD_PARTY_NOTICES.txt').write_text('\n\n'.join(notices), encoding='utf-8', newline='')
 info = {'version': version, 'source_repository': 'https://github.com/ezjfk/phasesai-setup', 'source_commit': commit,
         'toolchain': subprocess.check_output(['go', 'version'], text=True).strip(),
-        'prerelease': True, 'native_signed': False, 'windows_write_support': True,
+        'prerelease': True, 'native_signed': False, 'windows_write_support': True, 'windows_only': True, 'native_harness_downloads': True, 'credential_storage': 'harness_config',
         'github_build_attestation': os.environ.get('GITHUB_ACTIONS') == 'true', 'harness_live_certification': False}
 (dist / 'build-info.json').write_text(json.dumps(info, indent=2) + '\n', encoding='utf-8', newline='')
 checks = []

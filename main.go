@@ -1,4 +1,4 @@
-// Open source PhasesAI setup. No telemetry or self-update.
+// Open source Windows setup. No telemetry; harness releases resolve at runtime.
 package main
 
 import (
@@ -42,8 +42,16 @@ func object(parent map[string]any, key string) (map[string]any, error) {
 }
 
 func main() {
-	if err := run(); err != nil {
-		fmt.Fprintln(os.Stderr, "Setup:", err)
+	pause := len(os.Args) == 1 && ownConsole()
+	err := run()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "\n  Setup stopped:", err)
+	}
+	if pause {
+		fmt.Print("\n  Press Enter to close...")
+		_, _ = input.ReadString('\n')
+	}
+	if err != nil {
 		os.Exit(1)
 	}
 }

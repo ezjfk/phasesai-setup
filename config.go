@@ -21,27 +21,75 @@ type fieldChange struct {
 }
 
 func configFields(harness, model string) ([]fieldChange, error) {
+	return persistentFields(harness, model, "")
+}
+
+// Credentials live in the harness's own per-user config, so its normal command
+// works in a new terminal without a launcher or a shell environment variable.
+func persistentFields(harness, model, key string) ([]fieldChange, error) {
 	switch harness {
 	case "claude":
-		return []fieldChange{{[]string{"env", "ANTHROPIC_BASE_URL"}, origin}, {[]string{"env", "ANTHROPIC_MODEL"}, model}}, nil
+		return []fieldChange{
+			{[]string{"env", "ANTHROPIC_BASE_URL"}, origin},
+			{[]string{"env", "ANTHROPIC_AUTH_TOKEN"}, key},
+			{[]string{"env", "ANTHROPIC_API_KEY"}, ""},
+			{[]string{"env", "ANTHROPIC_MODEL"}, model},
+			{[]string{"env", "ANTHROPIC_DEFAULT_OPUS_MODEL"}, "claude-opus-5"},
+			{[]string{"env", "ANTHROPIC_DEFAULT_SONNET_MODEL"}, "claude-sonnet-5"},
+			{[]string{"env", "ANTHROPIC_DEFAULT_HAIKU_MODEL"}, "claude-haiku-4-5"},
+			{[]string{"model"}, model},
+		}, nil
 	case "codex":
-		out := []fieldChange{{[]string{"model"}, model}, {[]string{"model_provider"}, "phasesai"}}
+		out := []fieldChange{{[]string{"model"}, model}, {[]string{"model_provider"}, "phasesai"}, {[]string{"cli_auth_credentials_store"}, "file"}, {[]string{"forced_login_method"}, "api"}}
 		for _, v := range []struct {
 			k string
 			v any
-		}{{"name", "PhasesAI"}, {"base_url", origin + "/v1"}, {"env_key", "PHASESAI_API_KEY"}, {"wire_api", "responses"}, {"requires_openai_auth", false}, {"supports_websockets", false}} {
+		}{{"name", "PhasesAI"}, {"base_url", origin + "/v1"}, {"wire_api", "responses"}, {"requires_openai_auth", true}, {"supports_websockets", false}} {
 			out = append(out, fieldChange{[]string{"model_providers", "phasesai", v.k}, v.v})
 		}
 		return out, nil
 	case "opencode":
-		return []fieldChange{
-			{[]string{"model"}, "phasesai/" + model}, {[]string{"provider", "phasesai", "npm"}, "@ai-sdk/openai"}, {[]string{"provider", "phasesai", "name"}, "PhasesAI"},
-			{[]string{"provider", "phasesai", "options", "baseURL"}, origin + "/v1"}, {[]string{"provider", "phasesai", "options", "apiKey"}, "{env:PHASESAI_API_KEY}"},
-			{[]string{"provider", "phasesai", "models", model, "name"}, model},
-		}, nil
+		provider := "phasesai-anthropic"
+		if strings.HasPrefix(model, "gpt-") {
+			provider = "phasesai-gpt"
+		}
+		out := []fieldChange{{[]string{"$schema"}, "https://opencode.ai/config.json"}, {[]string{"model"}, provider + "/" + model}}
+		for _, p := range []struct {
+			id, npm, name string
+			context       int
+			models        []string
+		}{
+			{"phasesai-anthropic", "@ai-sdk/anthropic", "PhasesAI (Anthropic)", 1000000, []string{"claude-opus-5", "claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5", "claude-fable-5-1"}},
+			{"phasesai-gpt", "@ai-sdk/openai-compatible", "PhasesAI (GPT)", 1100000, []string{"gpt-6-astra", "gpt-6-sol", "gpt-6-luna", "gpt-6.1-sol"}},
+		} {
+			out = append(out, fieldChange{[]string{"provider", p.id, "npm"}, p.npm}, fieldChange{[]string{"provider", p.id, "name"}, p.name}, fieldChange{[]string{"provider", p.id, "options", "baseURL"}, origin + "/v1"}, fieldChange{[]string{"provider", p.id, "options", "apiKey"}, key})
+			if p.id == provider {
+				found := false
+				for _, id := range p.models {
+					if id == model {
+						found = true
+					}
+				}
+				if !found {
+					p.models = append(p.models, model)
+				}
+			}
+			for _, id := range p.models {
+				out = append(out, fieldChange{[]string{"provider", p.id, "models", id, "name"}, modelName(id)}, fieldChange{[]string{"provider", p.id, "models", id, "limit", "context"}, p.context}, fieldChange{[]string{"provider", p.id, "models", id, "limit", "output"}, 64000})
+			}
+		}
+		return out, nil
 	default:
 		return nil, errors.New("unsupported harness")
 	}
+}
+
+func modelName(id string) string {
+	names := map[string]string{"claude-opus-5": "Claude Opus 5", "claude-opus-5-5": "Claude Opus 5.5", "claude-sonnet-5-5": "Claude Sonnet 5.5", "claude-haiku-5-5": "Claude Haiku 5.5", "claude-fable-5-1": "Claude Fable 5.1", "gpt-6-astra": "GPT-6 Astra", "gpt-6-sol": "GPT-6 Sol", "gpt-6-luna": "GPT-6 Luna", "gpt-6.1-sol": "GPT-6.1 Sol"}
+	if name := names[id]; name != "" {
+		return name
+	}
+	return id
 }
 
 func decodeConfig(harness string, data []byte) (map[string]any, error) {
@@ -114,11 +162,15 @@ func fieldValue(root map[string]any, path []string) (any, bool) {
 }
 
 func changedFields(harness, model string, before []byte) ([]fieldChange, error) {
-	root, err := decodeConfig(harness, before)
+	fields, err := configFields(harness, model)
 	if err != nil {
 		return nil, err
 	}
-	fields, err := configFields(harness, model)
+	return changesFor(harness, before, fields)
+}
+
+func changesFor(harness string, before []byte, fields []fieldChange) ([]fieldChange, error) {
+	root, err := decodeConfig(harness, before)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +185,9 @@ func changedFields(harness, model string, before []byte) ([]fieldChange, error) 
 			current = next
 		}
 		key := f.Path[len(f.Path)-1]
-		if old, ok := current[key]; !ok || !reflect.DeepEqual(old, f.Value) {
+		oldJSON, _ := json.Marshal(current[key])
+		nextJSON, _ := json.Marshal(f.Value)
+		if _, ok := current[key]; !ok || !bytes.Equal(oldJSON, nextJSON) {
 			changes = append(changes, f)
 		}
 	}
@@ -141,7 +195,30 @@ func changedFields(harness, model string, before []byte) ([]fieldChange, error) 
 }
 
 func render(harness, model string, before []byte) ([]byte, error) {
-	changes, err := changedFields(harness, model, before)
+	return renderPersistent(harness, model, "", before)
+}
+
+func renderPersistent(harness, model, key string, before []byte) ([]byte, error) {
+	fields, err := persistentFields(harness, model, key)
+	if err != nil {
+		return nil, err
+	}
+	root, err := decodeConfig(harness, before)
+	if err != nil {
+		return nil, err
+	}
+	if harness == "claude" {
+		// Cosmetic preferences are defaults; existing choices are retained.
+		if _, ok := root["theme"]; !ok {
+			fields = append(fields, fieldChange{[]string{"theme"}, "dark-daltonized"})
+		}
+	}
+	if harness == "opencode" {
+		if _, ok := root["skills"]; !ok {
+			fields = append(fields, fieldChange{[]string{"skills"}, []string{"~/.claude/skills", "~/.agents/skills"}})
+		}
+	}
+	changes, err := changesFor(harness, before, fields)
 	if err != nil {
 		return nil, err
 	}
@@ -337,7 +414,7 @@ func configConflicts(harness string, data []byte) ([]string, error) {
 			paths = append(paths, []string{"model_providers", "phasesai", k})
 		}
 	case "opencode":
-		paths = [][]string{{"provider", "phasesai", "options", "headers"}}
+		paths = [][]string{{"provider", "phasesai", "options", "headers"}, {"provider", "phasesai-anthropic", "options", "headers"}, {"provider", "phasesai-gpt", "options", "headers"}}
 	}
 	var out []string
 	for _, p := range paths {

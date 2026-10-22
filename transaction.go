@@ -253,6 +253,14 @@ func transact(path string, before, after []byte, existed bool, verify func() err
 }
 
 func transactHome(home, path string, before, after []byte, existed bool, verify func() error) (string, error) {
+	return transactConfig(home, path, before, after, existed, false, verify)
+}
+
+func transactPrivateHome(home, path string, before, after []byte, existed bool, verify func() error) (string, error) {
+	return transactConfig(home, path, before, after, existed, true, verify)
+}
+
+func transactConfig(home, path string, before, after []byte, existed, private bool, verify func() error) (string, error) {
 	s, err := openStore(home, path)
 	if err != nil {
 		return "", err
@@ -273,6 +281,20 @@ func transactHome(home, path string, before, after []byte, existed bool, verify 
 		return "", errors.New("config changed since preview; retry")
 	}
 	if bytes.Equal(before, after) {
+		if private && exists {
+			f, err := s.parent.OpenFile(s.name, os.O_RDWR, 0)
+			if err != nil {
+				return "", err
+			}
+			_, err = inspectFile(f)
+			if err == nil {
+				err = secureFile(f)
+			}
+			f.Close()
+			if err != nil {
+				return "", err
+			}
+		}
 		return "", verify()
 	}
 	id := nonce()
@@ -285,8 +307,8 @@ func transactHome(home, path string, before, after []byte, existed bool, verify 
 	}
 	stage := s.name + ".phasesai-" + id + ".stage"
 	stageMetadata := metadata
-	if !existed {
-		stageMetadata.Mode = 0600
+	if !existed || private {
+		stageMetadata = fileMetadata{Mode: 0600}
 	}
 	if err = s.exclusive(stage, after, &stageMetadata); err != nil {
 		return backupPath(path, backup), err
