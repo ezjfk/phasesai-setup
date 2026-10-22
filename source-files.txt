@@ -10,6 +10,7 @@ distribution/worker.mjs
 distribution/worker.test.mjs
 distribution/wrangler.jsonc
 docs/windows-harness-research.md
+docs/windows-signing-options.md
 download.go
 download_test.go
 files_unix.go

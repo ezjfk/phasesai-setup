@@ -29,18 +29,42 @@ test('corrupt release bytes never reach R2 or the customer', async () => {
 });
 
 test('unknown hosts, paths, methods and an unpromoted stable channel are refused', async () => {
-  for (const request of [new Request('https://other.invalid/'),new Request('https://downloads.phasesai.cc/unknown'),new Request('https://downloads.phasesai.cc/setup/stable.json')]) assert.equal((await worker.fetch(request, {})).status, 404);
+  for (const request of [new Request('https://other.invalid/'),new Request('https://downloads.phasesai.cc/unknown')]) assert.equal((await worker.fetch(request, {})).status, 404);
   assert.equal((await worker.fetch(new Request('https://downloads.phasesai.cc/', { method: 'POST' }), {})).status, 405);
+  const previous = manifest.prerelease;
+  manifest.prerelease = true;
+  try { assert.equal((await worker.fetch(new Request('https://downloads.phasesai.cc/setup/stable.json'), {})).status, 404); }
+  finally { manifest.prerelease = previous; }
+});
+
+test('only an accepted attested release is advertised as stable and HEAD has no body', async () => {
+  const previous = { prerelease: manifest.prerelease, withdrawn: manifest.withdrawn, buildAttestation: manifest.buildAttestation };
+  Object.assign(manifest, { prerelease: false, withdrawn: false, buildAttestation: true });
+  try {
+    const response = await worker.fetch(new Request('https://downloads.phasesai.cc/setup/stable.json'), {});
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).version, manifest.version);
+    assert.equal(response.headers.get('Cache-Control'), 'no-store');
+    const head = await worker.fetch(new Request('https://downloads.phasesai.cc/setup/stable.json', { method: 'HEAD' }), {});
+    assert.equal(head.status, 200); assert.equal(await head.text(), '');
+    manifest.buildAttestation = false;
+    assert.equal((await worker.fetch(new Request('https://downloads.phasesai.cc/setup/stable.json'), {})).status, 404);
+    manifest.buildAttestation = true; manifest.withdrawn = true;
+    assert.equal((await worker.fetch(new Request('https://downloads.phasesai.cc/setup/stable.json'), {})).status, 404);
+  } finally { Object.assign(manifest, previous); }
 });
 
 test('a withdrawn native executable cannot be downloaded from the R2 host', async () => {
   const previous = manifest.withdrawn;
   manifest.withdrawn = true;
   try {
-    const path = Object.keys(manifest.assets).find(path => path.endsWith('windows-amd64.exe'));
-    const response = await worker.fetch(new Request('https://downloads.phasesai.cc' + path), {});
-    assert.equal(response.status, 410);
-    assert.equal(response.headers.get('Cache-Control'), 'no-store');
+    const paths = Object.keys(manifest.assets).filter(path => path.endsWith('.exe'));
+    assert.ok(paths.some(path => path.includes('phasesai-claude-setup-')));
+    for (const path of paths) {
+      const response = await worker.fetch(new Request('https://downloads.phasesai.cc' + path), {});
+      assert.equal(response.status, 410);
+      assert.equal(response.headers.get('Cache-Control'), 'no-store');
+    }
   } finally { manifest.withdrawn = previous; }
 });
 

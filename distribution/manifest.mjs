@@ -1,8 +1,8 @@
 export default {
-  "version": "v0.1.0-preview.4",
+  "version": "v0.2.0",
   "repository": "https://github.com/ezjfk/phasesai-setup",
-  "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a",
-  "prerelease": true,
+  "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513",
+  "prerelease": false,
   "nativeSigned": false,
   "buildAttestation": true,
   "withdrawn": false,
@@ -276,6 +276,117 @@ export default {
       "sha256": "c04debd229cff7ac7c4c10b83ff95931bd7761c48c6dc9f8aee7d7ffbdf29368",
       "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.1.0-preview.4/THIRD_PARTY_NOTICES.txt",
       "sourceCommit": "0d463e5ab8578de2222f0bdad0eb59cb977ed97a"
+    },
+    "/setup/v0.2.0/build-info.json": {
+      "key": "setup/v0.2.0/build-info.json",
+      "filename": "build-info.json",
+      "sha256": "8731e894e89fdfb405415ccb1f36f13ae13fa63e256012fe77299f04c36bd7d7",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/build-info.json",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/install.ps1": {
+      "key": "setup/v0.2.0/install.ps1",
+      "filename": "install.ps1",
+      "sha256": "e46c136b614c3140adc24bd6d3d860ca9baa1c3a23468dd76281ca70a6564b39",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/install.ps1",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/LICENSE": {
+      "key": "setup/v0.2.0/LICENSE",
+      "filename": "LICENSE",
+      "sha256": "114cd6e024bdf9ec7a59653e92040f7659a351e985ac170741b7ca77b08f6028",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/LICENSE",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/windows-amd64/phasesai-claude-setup-windows-amd64.exe": {
+      "key": "setup/v0.2.0/windows-amd64/phasesai-claude-setup-windows-amd64.exe",
+      "filename": "phasesai-claude-setup-windows-amd64.exe",
+      "sha256": "107b0497bea2bbe98282fd57ab2c6f4d0a42d56802dd9b0419b88d3132e7a584",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/phasesai-claude-setup-windows-amd64.exe",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/windows-arm64/phasesai-claude-setup-windows-arm64.exe": {
+      "key": "setup/v0.2.0/windows-arm64/phasesai-claude-setup-windows-arm64.exe",
+      "filename": "phasesai-claude-setup-windows-arm64.exe",
+      "sha256": "b22515d5f113553e1cc62e5e7d937970c3caf7c9530bd909af06b046f0ebff5c",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/phasesai-claude-setup-windows-arm64.exe",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/windows-amd64/phasesai-codex-setup-windows-amd64.exe": {
+      "key": "setup/v0.2.0/windows-amd64/phasesai-codex-setup-windows-amd64.exe",
+      "filename": "phasesai-codex-setup-windows-amd64.exe",
+      "sha256": "499c1805dc2f13146749507dc3a3c4f06925e1f3fe919e0dc9ace84cfa1c38b8",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/phasesai-codex-setup-windows-amd64.exe",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/windows-arm64/phasesai-codex-setup-windows-arm64.exe": {
+      "key": "setup/v0.2.0/windows-arm64/phasesai-codex-setup-windows-arm64.exe",
+      "filename": "phasesai-codex-setup-windows-arm64.exe",
+      "sha256": "141e29963ba70ad538b6102aa3eab65a0892e0b8ac3542c90f7dc33722805ff6",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/phasesai-codex-setup-windows-arm64.exe",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/windows-amd64/phasesai-opencode-setup-windows-amd64.exe": {
+      "key": "setup/v0.2.0/windows-amd64/phasesai-opencode-setup-windows-amd64.exe",
+      "filename": "phasesai-opencode-setup-windows-amd64.exe",
+      "sha256": "ff6e60f4279daf3fd48836fbf658f2e28b0826fe74fbe590494926ab2a5b0f88",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/phasesai-opencode-setup-windows-amd64.exe",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/windows-arm64/phasesai-opencode-setup-windows-arm64.exe": {
+      "key": "setup/v0.2.0/windows-arm64/phasesai-opencode-setup-windows-arm64.exe",
+      "filename": "phasesai-opencode-setup-windows-arm64.exe",
+      "sha256": "c2679dba29423abcc97bdf6216a3b5ee329c2fd0f9557c2378e5676cb855d064",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/phasesai-opencode-setup-windows-arm64.exe",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/phasesai-setup-source.tar.gz": {
+      "key": "setup/v0.2.0/phasesai-setup-source.tar.gz",
+      "filename": "phasesai-setup-source.tar.gz",
+      "sha256": "de1a4c0aef807c94922306f3d11f979cacd37a0dcfc1044f3305bb5212996fc8",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/phasesai-setup-source.tar.gz",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/windows-amd64/phasesai-setup-windows-amd64.exe": {
+      "key": "setup/v0.2.0/windows-amd64/phasesai-setup-windows-amd64.exe",
+      "filename": "phasesai-setup-windows-amd64.exe",
+      "sha256": "3724d6314389dbe8d901f1193679f2b378776ffc0ed4b0b2d008f708f7bb465c",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/phasesai-setup-windows-amd64.exe",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/windows-arm64/phasesai-setup-windows-arm64.exe": {
+      "key": "setup/v0.2.0/windows-arm64/phasesai-setup-windows-arm64.exe",
+      "filename": "phasesai-setup-windows-arm64.exe",
+      "sha256": "484396c89c82411deccda583fc70eff27643b536996cf88bf43d9a42eca705ce",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/phasesai-setup-windows-arm64.exe",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/sbom.spdx.json": {
+      "key": "setup/v0.2.0/sbom.spdx.json",
+      "filename": "sbom.spdx.json",
+      "sha256": "db39a9e02736f081cb32580f704f6552336f415ed53c5c00a95bdd2bcfe19f32",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/sbom.spdx.json",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/SHA256SUMS": {
+      "key": "setup/v0.2.0/SHA256SUMS",
+      "filename": "SHA256SUMS",
+      "sha256": "fbda81dc5e951c6b9e1041f630c0e29df99ad69fc5629f26f9bd009bdd147aa5",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/SHA256SUMS",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
+    },
+    "/setup/v0.2.0/THIRD_PARTY_NOTICES.txt": {
+      "key": "setup/v0.2.0/THIRD_PARTY_NOTICES.txt",
+      "filename": "THIRD_PARTY_NOTICES.txt",
+      "sha256": "cf34c888783f3437632074df72bc15ae1052e83e9b59d6b69af6cc33dae7e14a",
+      "source": "https://github.com/ezjfk/phasesai-setup/releases/download/v0.2.0/THIRD_PARTY_NOTICES.txt",
+      "sourceCommit": "46f44385529e6851e0c5d130d3a123d890901513"
     }
-  }
+  },
+  "platforms": [
+    "windows-amd64",
+    "windows-arm64"
+  ],
+  "releaseUrl": "https://github.com/ezjfk/phasesai-setup/releases/tag/v0.2.0",
+  "workflowRun": "https://github.com/ezjfk/phasesai-setup/actions/runs/39845531754"
 };

@@ -8,6 +8,8 @@ Public source: [ezjfk/phasesai-setup](https://github.com/ezjfk/phasesai-setup). 
 
 Download from [the latest Windows release](https://github.com/ezjfk/phasesai-setup/releases/latest). Choose `amd64` for an Intel/AMD PC or `arm64` for Windows on ARM.
 
+The [Windows setup guide](https://docs.phasesai.cc/setup/installer) also links to the verified v0.2.0 EXEs hosted on PhasesAI's R2 download domain. The [stable channel manifest](https://downloads.phasesai.cc/setup/stable.json) records their hashes and source identity.
+
 | EXE | Interaction |
 | --- | --- |
 | `phasesai-claude-setup-windows-amd64.exe` | Paste your API key; installs Claude Code |
@@ -87,3 +89,5 @@ gh attestation verify FILE --repo ezjfk/phasesai-setup --signer-workflow ezjfk/p
 The optional `scripts/install.ps1` bootstrap uses only built-in Windows PowerShell and verifies release checksums. Prefer direct EXE downloads for the simplest experience. Historical macOS/Linux releases are archival; new builds are Windows only. The R2 download host is managed separately and is not promoted by a GitHub source push.
 
 See [implementation research and primary sources](docs/windows-harness-research.md).
+
+See [free and paid Windows signing options](docs/windows-signing-options.md) for the SignPath Foundation eligibility requirements. The current release remains unsigned.

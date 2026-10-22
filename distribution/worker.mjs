@@ -64,12 +64,16 @@ export default {
     if (url.pathname === '/setup/preview.json') {
       return new Response(request.method === 'HEAD' ? null : JSON.stringify(manifest), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
     }
-    // A stable channel must be explicitly promoted after release acceptance.
-    if (url.pathname === '/setup/stable.json') return new Response(JSON.stringify({ status: 'preview_only', repository: manifest.repository }), { status: 404, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+    // Only an explicitly promoted, attested release can become the stable channel.
+    if (url.pathname === '/setup/stable.json') {
+      const promoted = manifest.prerelease === false && manifest.buildAttestation === true && !manifest.withdrawn && !(manifest.withdrawnVersions || []).includes(manifest.version);
+      const value = promoted ? manifest : { status: 'no_stable_release', repository: manifest.repository };
+      return new Response(request.method === 'HEAD' ? null : JSON.stringify(value), { status: promoted ? 200 : 404, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
+    }
     const entry = manifest.assets[url.pathname];
     if (!entry) return new Response('Not found', { status: 404 });
     const withdrawn = manifest.withdrawn || (manifest.withdrawnVersions || []).some(tag => url.pathname.startsWith(`/setup/${tag}/`));
-    if (withdrawn && /^phasesai-setup-(darwin|linux|windows)-(amd64|arm64)(\.exe)?$/.test(entry.filename)) {
+    if (withdrawn && /^phasesai-(?:(?:claude|codex|opencode)-)?setup-(darwin|linux|windows)-(amd64|arm64)(\.exe)?$/.test(entry.filename)) {
       return new Response('This executable preview was withdrawn. See /setup/preview.json for the current release.', { status: 410, headers: { 'Cache-Control': 'no-store' } });
     }
     try { return await serveArtifact(request, env, entry); }
