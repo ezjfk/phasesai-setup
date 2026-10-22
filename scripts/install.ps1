@@ -1,5 +1,5 @@
 param(
-  [ValidatePattern('^v\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$')][string]$Version = 'v0.2.0-preview.1',
+  [ValidatePattern('^v\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$')][string]$Version = 'v0.2.0',
   [ValidateSet('all','claude','codex','opencode')][string]$Harness = 'all',
   [Parameter(ValueFromRemainingArguments=$true)][string[]]$InstallerArguments
 )

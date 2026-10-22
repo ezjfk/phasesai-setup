@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Push this isolated source and a preview tag; GitHub CI owns release binaries.
+# Push this isolated source and a release tag; GitHub CI owns release binaries.
 set -euo pipefail
 source_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd -- "$source_dir"
-tag="${1:-v0.1.0-preview.$(date -u +%Y%m%d%H%M%S)}"
-case "$tag" in --help|-h) printf '%s\n' 'Usage: bash phasesai-setup/scripts/publish-ci.sh [v0.1.0-preview.NUMBER|--check]'; exit 0 ;; esac
+tag="${1:-v0.2.0}"
+case "$tag" in --help|-h) printf '%s\n' 'Usage: bash phasesai-setup/scripts/publish-ci.sh [vMAJOR.MINOR.PATCH[-preview.NUMBER]|--check]'; exit 0 ;; esac
 [[ $# -le 1 ]] || { printf '%s\n' 'Too many arguments.' >&2; exit 2; }
 check_only=false
-if [[ "$tag" == --check ]]; then check_only=true; elif [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-preview\.[0-9][A-Za-z0-9.-]*$ ]]; then printf '%s\n' 'Use an explicit preview version.' >&2; exit 2; fi
+if [[ "$tag" == --check ]]; then check_only=true; elif [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-preview\.[0-9][A-Za-z0-9.-]*)?$ ]]; then printf '%s\n' 'Use a release version such as v0.2.0 or v0.3.0-preview.1.' >&2; exit 2; fi
 for command in git go; do command -v "$command" >/dev/null || { printf 'Missing %s\n' "$command" >&2; exit 1; }; done
 if ! top="$(git rev-parse --show-toplevel 2>&1)"; then
   printf '%s\n' "$top" >&2
@@ -34,8 +34,8 @@ go mod verify
 go test ./...
 go vet ./...
 [[ "$check_only" == false ]] || { printf '%s\n' 'Preflight passed. No authentication or remote mutation attempted.'; exit 0; }
-printf 'Repository: https://github.com/ezjfk/phasesai-setup\nCommit: %s\nPreview tag: %s\n' "$(git rev-parse HEAD)" "$tag"
-printf '%s\n' 'This pushes reviewed source. CI tests Windows, builds once, attests artifacts and publishes a prerelease.'
+printf 'Repository: https://github.com/ezjfk/phasesai-setup\nCommit: %s\nRelease tag: %s\n' "$(git rev-parse HEAD)" "$tag"
+printf '%s\n' 'This pushes reviewed source. CI tests Windows, builds once, attests artifacts and publishes. Tags without a suffix become the latest stable release; preview tags remain prereleases.'
 read -r -p 'Type PUBLISH to push source and tag: ' confirmation
 [[ "$confirmation" == PUBLISH ]] || { printf '%s\n' 'Cancelled.'; exit 1; }
 git fetch origin main
@@ -43,7 +43,7 @@ git merge-base --is-ancestor origin/main HEAD || { printf '%s\n' 'Remote main ha
 if [[ -n "$(git ls-remote --tags origin "refs/tags/$tag")" ]]; then printf '%s\n' 'Remote tag exists; choose a new version. Nothing overwritten.' >&2; exit 1; fi
 if git show-ref --verify --quiet "refs/tags/$tag"; then
   [[ "$(git rev-parse "$tag^{}")" == "$(git rev-parse HEAD)" ]] || { printf '%s\n' 'Local tag points elsewhere.' >&2; exit 1; }
-else git tag -a "$tag" -m "PhasesAI setup verified preview $tag"; fi
+else git tag -a "$tag" -m "PhasesAI setup verified release $tag"; fi
 git push --atomic origin HEAD:refs/heads/main "refs/tags/$tag"
 printf '\nFollow CI: https://github.com/ezjfk/phasesai-setup/actions\nRelease after CI passes: https://github.com/ezjfk/phasesai-setup/releases/tag/%s\n' "$tag"
-printf '%s\n' 'R2 promotion is a separate hash-verified operation. No stable channel was promoted.'
+printf '%s\n' 'R2 promotion is a separate hash-verified operation; this publishes to GitHub only.'

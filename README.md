@@ -6,7 +6,7 @@ Public source: [ezjfk/phasesai-setup](https://github.com/ezjfk/phasesai-setup). 
 
 ## Download and use
 
-Download from [the Windows release](https://github.com/ezjfk/phasesai-setup/releases/tag/v0.2.0-preview.1). Choose `amd64` for an Intel/AMD PC or `arm64` for Windows on ARM.
+Download from [the latest Windows release](https://github.com/ezjfk/phasesai-setup/releases/latest). Choose `amd64` for an Intel/AMD PC or `arm64` for Windows on ARM.
 
 | EXE | Interaction |
 | --- | --- |
@@ -78,7 +78,7 @@ go test -run '^TestNativeWindowsCleanProfile$' -v -timeout=20m .
 
 The opt-in acceptance test uses actual latest downloads and dummy credentials in an isolated profile with Node/npm/Git removed from PATH. It checks native versions, bundle companions, persisted Codex login, and OpenCode's effective config. It sends no model inference and does not change the real user's PATH or Start menu. A fresh Windows VM and paid end-to-end harness/tool acceptance remain separate checks.
 
-GitHub CI tests Windows, builds only x64/ARM64 EXEs (universal chooser plus three app presets), emits source/SBOM/licenses/checksums, attests the exact artifacts, and publishes preview tags. Setup EXEs are not Authenticode signed. Inspect the source and release metadata; maintainers can verify provenance with:
+GitHub CI tests Windows, builds only x64/ARM64 EXEs (universal chooser plus three app presets), emits source/SBOM/licenses/checksums, and attests the exact artifacts. Plain version tags such as `v0.2.0` publish as the latest stable release; explicit `-preview.N` tags remain prereleases. Setup EXEs are not Authenticode signed. Inspect the source and release metadata; maintainers can verify provenance with:
 
 ```sh
 gh attestation verify FILE --repo ezjfk/phasesai-setup --signer-workflow ezjfk/phasesai-setup/.github/workflows/preview.yml --source-ref refs/tags/EXACT_TAG

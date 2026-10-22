@@ -1,9 +1,9 @@
-name: Verified preview release
+name: Verified Windows release
 on:
   workflow_dispatch:
   push:
     branches: ['main']
-    tags: ['v*-preview.*']
+    tags: ['v*']
 permissions:
   contents: read
 jobs:
@@ -44,14 +44,17 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: '1.27.3'
-      - name: Cross-compile preview artifacts
+      - name: Cross-compile Windows artifacts
         shell: bash
         env:
           CGO_ENABLED: '0'
         run: |
           set -euo pipefail
           version="0.0.0-preview.${GITHUB_RUN_NUMBER}"
-          if [[ "$GITHUB_REF_TYPE" == tag ]]; then version="${GITHUB_REF_NAME#v}"; fi
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-preview\.[0-9][A-Za-z0-9.-]*)?$ ]] || { echo 'Invalid release tag.' >&2; exit 1; }
+            version="${GITHUB_REF_NAME#v}"
+          fi
           mkdir -p dist
           for arch in amd64 arm64; do
             for harness in all claude codex opencode; do
@@ -70,7 +73,7 @@ jobs:
           subject-path: 'dist/*'
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: phasesai-setup-preview
+          name: phasesai-setup-windows
           path: dist/
   publish:
     if: startsWith(github.ref, 'refs/tags/')
@@ -81,9 +84,9 @@ jobs:
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: phasesai-setup-preview
+          name: phasesai-setup-windows
           path: dist/
-      - name: Publish the exact attested artifacts as a prerelease
+      - name: Publish the exact attested artifacts
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
@@ -93,10 +96,14 @@ jobs:
         run: |
           set -euo pipefail
           cat > release-notes.md <<'NOTES'
-          Open source PhasesAI setup preview. Windows-only native installer. Downloads the latest stable harnesses, saves credentials in app config files, and adds User PATH and Start menu shortcuts. No Node.js, npm, Git, or administrator setup required.
+          Windows-only PhasesAI installer. Downloads the latest stable harnesses, saves credentials in app config files, and adds User PATH and Start menu shortcuts. No Node.js, npm, Git, or administrator setup required.
 
           Verify artifacts using `gh attestation verify FILE --repo ezjfk/phasesai-setup` and SHA256SUMS. Source commit, dependency inventory and third-party notices are included.
 
-          Binaries have GitHub build provenance. Setup EXEs are not Windows Authenticode-signed. Harness recipes are source-reviewed; live model/tool certification remains separate. This is a prerelease, not a promoted stable channel.
+          Windows CI validates native installation and saved authentication/configuration with an isolated profile and no Node/npm/Git on PATH. The Windows setup has also been manually tested by the maintainer.
+
+          Binaries have GitHub build provenance. Setup EXEs are not Windows Authenticode-signed. This release does not change the separately managed R2 download host.
           NOTES
-          gh release create "$RELEASE_TAG" dist/* --verify-tag --prerelease --title "PhasesAI setup $RELEASE_TAG" --notes-file release-notes.md
+          release_flags=(--latest)
+          if [[ "$RELEASE_TAG" == *-* ]]; then release_flags=(--prerelease); fi
+          gh release create "$RELEASE_TAG" dist/* --verify-tag "${release_flags[@]}" --title "PhasesAI setup $RELEASE_TAG" --notes-file release-notes.md

@@ -56,7 +56,7 @@ dist.mkdir(parents=True, exist_ok=True)
 (dist / 'THIRD_PARTY_NOTICES.txt').write_text('\n\n'.join(notices), encoding='utf-8', newline='')
 info = {'version': version, 'source_repository': 'https://github.com/ezjfk/phasesai-setup', 'source_commit': commit,
         'toolchain': subprocess.check_output(['go', 'version'], text=True).strip(),
-        'prerelease': True, 'native_signed': False, 'windows_write_support': True, 'windows_only': True, 'native_harness_downloads': True, 'credential_storage': 'harness_config',
+        'prerelease': '-' in version.split('+')[0], 'native_signed': False, 'windows_write_support': True, 'windows_only': True, 'native_harness_downloads': True, 'credential_storage': 'harness_config',
         'github_build_attestation': os.environ.get('GITHUB_ACTIONS') == 'true', 'harness_live_certification': False}
 (dist / 'build-info.json').write_text(json.dumps(info, indent=2) + '\n', encoding='utf-8', newline='')
 checks = []
